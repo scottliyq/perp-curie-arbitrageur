@@ -25,7 +25,7 @@
             "IS_EMERGENCY_REDUCE_MODE_ENABLED": true
         },
         "vPERP": {
-            "IS_ENABLED": true,
+            "IS_ENABLED": false,
             "FTX_MARKET_NAME": "PERP-PERP",
             "ORDER_AMOUNT": 1000,
             "SHORT_TRIGGER_SPREAD": 0.005,

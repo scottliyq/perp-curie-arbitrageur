@@ -455,25 +455,26 @@ export class Arbitrageur extends BotService {
                     ftxSizeIncrement: +market.ftxSizeIncrement,
                 },
             })
-            await Promise.all([
-                this.openPosition(
-                    this.wallet,
-                    market.baseToken,
-                    perpSide,
-                    AmountType.BASE,
-                    size,
-                    undefined,
-                    undefined,
-                    this.referralCode,
-                ),
-                this.ftxService.placeOrder(this.ftxClient, {
-                    market: market.ftxMarketName,
-                    side: ftxSide,
-                    price: null,
-                    size: +size,
-                    type: OrderType.MARKET,
-                }),
-            ])
+            // todo 下单
+            // await Promise.all([
+            //     this.openPosition(
+            //         this.wallet,
+            //         market.baseToken,
+            //         perpSide,
+            //         AmountType.BASE,
+            //         size,
+            //         undefined,
+            //         undefined,
+            //         this.referralCode,
+            //     ),
+            //     this.ftxService.placeOrder(this.ftxClient, {
+            //         market: market.ftxMarketName,
+            //         side: ftxSide,
+            //         price: null,
+            //         size: +size,
+            //         type: OrderType.MARKET,
+            //     }),
+            // ])
         } else if (curLongSpread.lt(market.longTriggerSpread)) {
             // long
             const perpSide = Side.LONG
@@ -499,25 +500,26 @@ export class Arbitrageur extends BotService {
                     ftxSizeIncrement: +market.ftxSizeIncrement,
                 },
             })
-            await Promise.all([
-                this.openPosition(
-                    this.wallet,
-                    market.baseToken,
-                    perpSide,
-                    AmountType.BASE,
-                    size,
-                    undefined,
-                    undefined,
-                    this.referralCode,
-                ),
-                this.ftxService.placeOrder(this.ftxClient, {
-                    market: market.ftxMarketName,
-                    side: ftxSide,
-                    price: null,
-                    size: +size,
-                    type: OrderType.MARKET,
-                }),
-            ])
+            // todo 下单
+            // await Promise.all([
+            //     this.openPosition(
+            //         this.wallet,
+            //         market.baseToken,
+            //         perpSide,
+            //         AmountType.BASE,
+            //         size,
+            //         undefined,
+            //         undefined,
+            //         this.referralCode,
+            //     ),
+            //     this.ftxService.placeOrder(this.ftxClient, {
+            //         market: market.ftxMarketName,
+            //         side: ftxSide,
+            //         price: null,
+            //         size: +size,
+            //         type: OrderType.MARKET,
+            //     }),
+            // ])
         } else {
             this.log.jinfo({ event: "NotTriggered", params: { market: market.name } })
         }
