@@ -1,6 +1,6 @@
 {
-    "PRICE_CHECK_INTERVAL_SEC": 5,
-    "BALANCE_CHECK_INTERVAL_SEC": 10,
+    "PRICE_CHECK_INTERVAL_SEC": 30,
+    "BALANCE_CHECK_INTERVAL_SEC": 30,
 
     "ARBITRAGE_MAX_GAS_FEE_ETH": 0.02,
     "BALANCE_MAX_GAS_FEE_ETH": 0.1,
@@ -19,15 +19,9 @@
         "vBTC": {
             "IS_ENABLED": true,
             "FTX_MARKET_NAME": "BTC-PERP",
-            "ORDER_AMOUNT": 10,
-            "SHORT_TRIGGER_SPREAD": 0.005,
-            "LONG_TRIGGER_SPREAD": -0.005,
-            "IS_EMERGENCY_REDUCE_MODE_ENABLED": true
-        },
-        "vPERP": {
-            "IS_ENABLED": false,
-            "FTX_MARKET_NAME": "PERP-PERP",
-            "ORDER_AMOUNT": 1000,
+            "BN_MARKET_NAME": "BTCBUSD",
+            "ORDER_AMOUNT": 0.001,
+            "TARGET_SIZE": 0.001,
             "SHORT_TRIGGER_SPREAD": 0.005,
             "LONG_TRIGGER_SPREAD": -0.005,
             "IS_EMERGENCY_REDUCE_MODE_ENABLED": true

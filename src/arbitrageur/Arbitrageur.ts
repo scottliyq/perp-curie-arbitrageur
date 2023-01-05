@@ -94,12 +94,12 @@ export class Arbitrageur extends BotService {
                 continue
             }
             const pool = poolMap[marketName]
-            const ftxMarket = await this.ftxService.getMarket(market.FTX_MARKET_NAME)
+            // const ftxMarket = await this.ftxService.getMarket(market.FTX_MARKET_NAME)
             this.marketMap[marketName] = {
                 name: marketName,
                 baseToken: pool.baseAddress,
                 poolAddr: pool.address,
-                ftxSizeIncrement: ftxMarket.sizeIncrement,
+                ftxSizeIncrement: Big(0.01),
                 // config
                 ftxMarketName: market.FTX_MARKET_NAME,
                 orderAmount: Big(market.ORDER_AMOUNT),
@@ -115,16 +115,27 @@ export class Arbitrageur extends BotService {
     }
 
     async start(): Promise<void> {
-        this.ethService.enableEndpointRotation()
+        // this.ethService.enableEndpointRotation()
         const balance = await this.perpService.getUSDCBalance(this.wallet.address)
         this.log.jinfo({ event: "CheckUSDCBalance", params: { balance: +balance } })
-        if (balance.gt(0)) {
-            await this.approve(this.wallet, balance)
-            await this.deposit(this.wallet, balance)
-        }
-        this.emergencyReduceRoutine()
-        this.balanceRoutine()
+        // if (balance.gt(0)) {
+        //     await this.approve(this.wallet, balance)
+        //     await this.deposit(this.wallet, balance)
+        // }
+        // this.emergencyReduceRoutine()
+        // this.balanceRoutine()
         this.arbitrageRoutine()
+                    // await Promise.all([
+        // this.openPosition(
+        //             this.wallet,
+        //             market.baseToken,
+        //             perpSide,
+        //             AmountType.BASE,
+        //             size,
+        //             undefined,
+        //             undefined,
+        //             this.referralCode,
+        // )
     }
 
     isImbalance(market: Market, ftxPositionSize: Big, perpPositionSize: Big): boolean {
@@ -364,26 +375,48 @@ export class Arbitrageur extends BotService {
         return baseSize
     }
 
+    async getPrice(marketName: string) {
+        // const ftxPrice = await this.ftxService.getPrice(market.ftxMarketName)
+        // const avgPrice = await this.getAvgPrice(market, side, openOrderAmount)
+        const price = Big(16000.0)
+        return price
+    }
+
+    async getCexPositionSize(marketName: string) {
+        // const ftxPrice = await this.ftxService.getPrice(market.ftxMarketName)
+        // const avgPrice = await this.getAvgPrice(market, side, openOrderAmount)
+        // const price = Big(16000.0)
+        return Big(0)
+    }
+
     async arbitrage(market: Market) {
         // getting margin ratio
-        const [isBelowPerpMarginRatio, isBelowFTXMarginRatio, perpPositionSize, ftxPositionSize] = await Promise.all([
+        this.log.jinfo({
+            event: "arbitrage start",
+            params: { market: market.name },
+        })
+        const isBelowFTXMarginRatio = true
+        const [isBelowPerpMarginRatio, perpPositionSize, ftxPositionSize] = await Promise.all([
             this.isBelowPerpMarginRatio(config.PERP_MIN_MARGIN_RATIO),
-            this.isBelowFTXMarginRatio(config.FTX_MIN_MARGIN_RATIO),
             this.perpService.getTotalPositionSize(this.wallet.address, market.baseToken),
-            this.ftxService.getPositionSize(this.ftxClient, market.ftxMarketName),
+            // this.ftxService.getPositionSize(this.ftxClient, market.ftxMarketName),
+            this.getCexPositionSize(market.ftxMarketName),
         ])
-        if (this.isImbalance(market, ftxPositionSize, perpPositionSize)) {
-            this.log.jinfo({
-                event: "SkipArbitrageDueToImbalance",
-                params: { market: market.name, ftxPositionSize: +ftxPositionSize, perpPositionSize: +perpPositionSize },
-            })
-            return
-        }
-
+        // if (this.isImbalance(market, ftxPositionSize, perpPositionSize)) {
+        //     this.log.jinfo({
+        //         event: "SkipArbitrageDueToImbalance",
+        //         params: { market: market.name, ftxPositionSize: +ftxPositionSize, perpPositionSize: +perpPositionSize },
+        //     })
+        //     return
+        // }
+        this.log.jinfo({
+            event: "position size",
+            params: { perp_position: perpPositionSize, ftx_position: ftxPositionSize },
+        })
         // spread
         const orderAmount = market.orderAmount
         const [ftxPrice, perpLongAvgPrice, perpShortAvgPrice] = await Promise.all([
-            this.ftxService.getPrice(market.ftxMarketName),
+            this.getPrice(market.ftxMarketName),
             this.getAvgPrice(market, Side.LONG, orderAmount),
             this.getAvgPrice(market, Side.SHORT, orderAmount),
         ])
@@ -432,21 +465,28 @@ export class Arbitrageur extends BotService {
 
         if (curShortSpread.gt(market.shortTriggerSpread)) {
             // short
+            this.log.jinfo({
+                event: "perp:short, cex:long",
+                params: {
+                    market: market.name,
+                },
+            })
             const perpSide = Side.SHORT
             const ftxSide = FTXSide.BUY
             // should not increase position if we are below min margin ratio
             const isIncrease = perpPositionSize.lte(0)
-            if (isIncrease && isBelowMarginRatio) {
-                this.log.jinfo({
-                    event: "ShouldNotIncreasePerpPosition",
-                    params: {
-                        perpMinMarginRatio: config.PERP_MIN_MARGIN_RATIO,
-                        ftxMinMarginRatio: config.FTX_MIN_MARGIN_RATIO,
-                    },
-                })
-                return
-            }
-            const size = await this.calcOpenSize(market, ftxPrice, orderAmount, isIncrease)
+            // if (isIncrease && isBelowMarginRatio) {
+            //     this.log.jinfo({
+            //         event: "ShouldNotIncreasePerpPosition",
+            //         params: {
+            //             perpMinMarginRatio: config.PERP_MIN_MARGIN_RATIO,
+            //             ftxMinMarginRatio: config.FTX_MIN_MARGIN_RATIO,
+            //         },
+            //     })
+            //     return
+            // }
+            // const size = await this.calcOpenSize(market, ftxPrice, orderAmount, isIncrease)
+            const size = orderAmount
             this.log.jinfo({
                 event: "ShortArbitrage",
                 params: {
@@ -456,6 +496,25 @@ export class Arbitrageur extends BotService {
                 },
             })
             // todo 下单
+            await Promise.all([
+                this.openPosition(
+                    this.wallet,
+                    market.baseToken,
+                    perpSide,
+                    AmountType.BASE,
+                    size,
+                    undefined,
+                    undefined,
+                    this.referralCode,
+                )
+                // this.ftxService.placeOrder(this.ftxClient, {
+                //     market: market.ftxMarketName,
+                //     side: ftxSide,
+                //     price: null,
+                //     size: +size,
+                //     type: OrderType.MARKET,
+                // }),
+            ])
             // await Promise.all([
             //     this.openPosition(
             //         this.wallet,
@@ -477,6 +536,12 @@ export class Arbitrageur extends BotService {
             // ])
         } else if (curLongSpread.lt(market.longTriggerSpread)) {
             // long
+            this.log.jinfo({
+                event: "perp:long, cex:short",
+                params: {
+                    market: market.name,
+                },
+            })
             const perpSide = Side.LONG
             const ftxSide = FTXSide.SELL
             // should not increase position if we are below min margin ratio

@@ -9,7 +9,9 @@
         "sls:deploy": "sls deploy"
     },
     "dependencies": {
-        "@perp/common": "0.1.12"
+        "@perp/common": "0.1.12",
+        "binance": "^2.2.9",
+        "tslib": "^1.10"
     },
     "devDependencies": {
         "@graphql-codegen/cli": "2.0.1",
